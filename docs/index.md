@@ -74,15 +74,13 @@ To ensure the accuracy and reliability of our system, we followed a rigorous dat
 
 We constructed a fixed test rig in the i-Lounge at EA-04-04 to ensure repeatability and eliminate confounding variables. The setup consists of four UWB anchors mounted on the ceiling in a rectangular configuration. The anchors are mounted with a 45° downward pitch to optimize their coverage of the test area.
 
-**Image of Test Rig (Fig 6 from report)**
-
-**Image of UWB module ceiling mounts (Fig 7 from report)**
+![Test Rig](./assets/test_rig.png)
 
 ### Data Collection Process
 
 We collected data at four fixed coordinates within the test rig. At each coordinate, we tested various orientations of the UWB transmitter (an iPhone) to account for the variations in signal strength and quality.
 
-**Image of Phone Orientations (Fig 8 from report)**
+![Phone Orientations](./assets/phone_orientations.png)
 
 The main aspects we evaluated were:
 
