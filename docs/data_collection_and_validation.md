@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: default
 title: Data Collection and Validation
 permalink: /data_collection_and_validation/
 ---

@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: default
 title: Application Layer (Demos)
 permalink: /application_layer_demos/
 ---

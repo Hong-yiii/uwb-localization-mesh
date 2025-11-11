@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: default
 title: PGO, Algorithms, and Optimization
 permalink: /pgo_algorithms_and_optimization/
 ---
