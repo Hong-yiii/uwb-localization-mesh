@@ -1,0 +1,3 @@
+theme: jekyll-theme-minima
+title: UWB Localization Mesh
+description: "A project to create a middleware for high-precision indoor localization using UWB technology."
