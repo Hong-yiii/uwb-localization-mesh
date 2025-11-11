@@ -1,5 +1,7 @@
 ---
-layout: home
+layout: default
+title: UWB Localization Mesh
+permalink: /
 ---
 
 - [Home](index.md)

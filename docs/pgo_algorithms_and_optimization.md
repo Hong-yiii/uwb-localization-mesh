@@ -36,8 +36,24 @@ The performance of the PGO system is highly dependent on the quality of the inpu
 
 ### Performance Gains
 
-The following "God Plot" illustrates the performance improvement achieved through our PGO algorithm and optimization techniques. It shows how the accuracy improves as we add more anchors to the system.
+The following "God Plots" illustrate the performance improvement achieved through our PGO algorithm and optimization techniques across different phone orientations. Each plot shows how the accuracy improves as we add more anchors to the system, demonstrating the effectiveness of our sensor fusion approach.
 
-![God Plot](./assets/god_plot_v5_orientation_A.png)
+#### Orientation A
+![God Plot Orientation A](./assets/god_plot_v5_orientation_A.png)
+*Fig 1: Performance improvement with increasing number of anchors (Orientation A)*
 
-As you can see, the estimated position (in red) gets closer to the ground truth (the center of the crosshairs) as we increase the number of anchors from 1 to 4. This demonstrates the effectiveness of our sensor fusion approach. The "whiskers" on the plot represent the standard error, and you can see that they also decrease as we add more anchors, indicating a more stable and reliable position estimate.
+#### Orientation B
+![God Plot Orientation B](./assets/god_plot_v5_orientation_B.png)
+*Fig 2: Performance improvement with increasing number of anchors (Orientation B)*
+
+#### Orientation C
+![God Plot Orientation C](./assets/god_plot_v5_orientation_C.png)
+*Fig 3: Performance improvement with increasing number of anchors (Orientation C)*
+
+#### Orientation U (Unknown)
+![God Plot Orientation U](./assets/god_plot_v5_orientation_U.png)
+*Fig 4: Performance improvement with increasing number of anchors (Orientation U)*
+
+In each plot, the estimated position (shown in red) converges closer to the ground truth (the center of the crosshairs) as we increase the number of anchors from 1 to 4. The "whiskers" on each plot represent the standard error, which decreases with more anchors, indicating improved stability and reliability.
+
+These results demonstrate the robustness of our PGO algorithm across different device orientations, showing consistent performance improvements regardless of how the user holds their device. The multi-anchor fusion significantly reduces both the position error and the uncertainty in the estimates.
