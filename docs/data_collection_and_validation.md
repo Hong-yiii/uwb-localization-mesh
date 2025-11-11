@@ -4,6 +4,14 @@ title: Data Collection and Validation
 permalink: /data_collection_and_validation/
 ---
 
+- [Home](index.md)
+- [Impact](impact.md)
+- [System Architecture](system_architecture.md)
+- [PGO, Algorithms, and Optimization](pgo_algorithms_and_optimization.md)
+- [Application Layer (Demos)](application_layer_demos.md)
+- [Data Collection and Validation](data_collection_and_validation.md)
+- [Software Engineering](software_engineering.md)
+
 ## 5. Data Collection and Validation
 
 To ensure the accuracy and reliability of our system, we followed a rigorous data collection and validation process. A fixed test rig was constructed to ensure repeatability and eliminate confounding variables.

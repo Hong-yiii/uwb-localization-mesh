@@ -4,6 +4,14 @@ title: Software Engineering
 permalink: /software_engineering/
 ---
 
+- [Home](index.md)
+- [Impact](impact.md)
+- [System Architecture](system_architecture.md)
+- [PGO, Algorithms, and Optimization](pgo_algorithms_and_optimization.md)
+- [Application Layer (Demos)](application_layer_demos.md)
+- [Data Collection and Validation](data_collection_and_validation.md)
+- [Software Engineering](software_engineering.md)
+
 ## 6. SWE Structure, Packages etc.
 
 Our system is built on a robust and modular software architecture that is designed for scalability and ease of use. We have followed best practices in software engineering to ensure that the system is reliable, maintainable, and extensible.

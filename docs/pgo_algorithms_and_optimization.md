@@ -4,6 +4,14 @@ title: PGO, Algorithms, and Optimization
 permalink: /pgo_algorithms_and_optimization/
 ---
 
+- [Home](index.md)
+- [Impact](impact.md)
+- [System Architecture](system_architecture.md)
+- [PGO, Algorithms, and Optimization](pgo_algorithms_and_optimization.md)
+- [Application Layer (Demos)](application_layer_demos.md)
+- [Data Collection and Validation](data_collection_and_validation.md)
+- [Software Engineering](software_engineering.md)
+
 ## 3. PGO, Algorithms, and Optimization
 
 At the heart of our middleware is a Pose Graph Optimization (PGO) algorithm. This approach treats the localization problem as a graph, where the UWB anchors are nodes and the measurements between them are edges. By minimizing the error across the entire graph, we can fuse the data from multiple anchors to achieve a more accurate and reliable position estimate.

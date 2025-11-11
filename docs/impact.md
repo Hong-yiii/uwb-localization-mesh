@@ -4,6 +4,14 @@ title: Impact
 permalink: /impact/
 ---
 
+- [Home](index.md)
+- [Impact](impact.md)
+- [System Architecture](system_architecture.md)
+- [PGO, Algorithms, and Optimization](pgo_algorithms_and_optimization.md)
+- [Application Layer (Demos)](application_layer_demos.md)
+- [Data Collection and Validation](data_collection_and_validation.md)
+- [Software Engineering](software_engineering.md)
+
 ## 1. Impact
 
 This project introduces a UWB-based middleware that transforms raw radio-frequency data into a high-resolution spatial grid, enabling precise indoor localization. This technology empowers Bang & Olufsen (B&O) to create seamless, spatially adaptive audio experiences that respond intuitively to a listener's position. The middleware addresses the key challenges of precision and connection drops that are common with UWB technology, leveraging the multi-device environment that B&O owners often have.

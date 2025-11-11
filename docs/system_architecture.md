@@ -4,6 +4,14 @@ title: System Architecture
 permalink: /system_architecture/
 ---
 
+- [Home](index.md)
+- [Impact](impact.md)
+- [System Architecture](system_architecture.md)
+- [PGO, Algorithms, and Optimization](pgo_algorithms_and_optimization.md)
+- [Application Layer (Demos)](application_layer_demos.md)
+- [Data Collection and Validation](data_collection_and_validation.md)
+- [Software Engineering](software_engineering.md)
+
 ## 2. System Architecture
 
 Our system is designed with a three-layer architecture to ensure modularity, scalability, and real-time performance. This modular approach allows for independent development and testing of each component, which is crucial for a complex system like this.
