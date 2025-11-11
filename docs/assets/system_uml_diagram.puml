@@ -1,0 +1,309 @@
+@startuml UWB Localization System Architecture
+skinparam backgroundColor #FEFEFE
+skinparam sequenceParticipant underline
+left to right direction
+scale 0.8
+
+title UWB Localization Mesh - Complete System Architecture
+
+package "Core Data Types" as datatypes #LightBlue {
+    class Measurement {
+        + timestamp: float
+        + anchor_id: int
+        + phone_node_id: int
+        + local_vector: np.ndarray
+    }
+
+    class BinnedData {
+        + bin_start_time: float
+        + bin_end_time: float
+        + phone_node_id: int
+        + measurements: Mapping[int, List[np.ndarray]]
+    }
+
+    class AnchorConfig {
+        + positions: Dict[int, np.ndarray]
+        + get_position(anchor_id: int): np.ndarray
+        + get_all_positions(): Dict[int, np.ndarray]
+    }
+
+    class MQTTConfig {
+        + broker: str\n+ port: int\n+ client_id: str
+        + qos: int\n+ keepalive: int\n+ base_topic: str
+    }
+}
+
+package "Localization Algorithms" as localization_algos #LightGreen {
+    package "Edge Creation" as edge_creation {
+        class AnchorEdges {
+            {static} + create_anchor_anchor_edges(config): List[Tuple]
+        }
+
+        class Transforms {
+            {static} ANCHOR_R: Dict[int, np.ndarray]
+            {static} + create_relative_measurement(...): Tuple[str, str, np.ndarray]
+            {static} + Rz(deg: float): np.ndarray
+            {static} + Ry(deg: float): np.ndarray
+        }
+    }
+
+    package "Binning" as binning {
+        class SlidingWindowBinner {
+            - window_size_seconds: float
+            - measurements_buffer: deque
+            - metrics: BinningMetrics
+
+            + add_measurement(m: Measurement): bool
+            + create_binned_data(id: int): Optional[BinnedData]
+            + get_metrics(): BinningMetrics
+            - _validate_measurement(m): tuple[bool, str]
+        }
+
+        class BinningMetrics {
+            + late_drops: int
+            + rejected_measurements: int
+            + total_measurements: int
+            + measurements_per_anchor: Dict[int, int]
+            + rejection_reasons: Dict[str, int]
+            + window_span_sec: float
+        }
+    }
+
+    package "Pose Graph Optimization" as pgo {
+        class PGOSolver {
+            - max_iterations: int
+            - convergence_threshold: float
+            - method: str
+
+            + solve(nodes, edges, anchors): PGOResult
+        }
+
+        class PGOResult {
+            + node_positions: Dict[str, np.ndarray]
+            + success: bool\n+ iterations: int\n+ error: float
+        }
+
+        class PGOTransforms {
+            {static} + apply_anchoring_transformation(pos, anchors): Dict
+        }
+    }
+}
+
+package "MQTT Communication" as mqtt #LightYellow {
+    package "Server Side" as mqtt_server {
+        class UWBMQTTServer {
+            - config: MQTTConfig
+            - on_measurement: Callable
+            - _client: mqtt.Client
+            - _connected: bool
+
+            + start(): void\n+ stop(): void
+            + _on_connect(...): void
+            + _on_message(...): void
+        }
+    }
+
+    package "Client Side" as mqtt_client {
+        class UWBMQTTClient {
+            - config: MQTTConfig
+            - phone_node_id: int
+            - _client: mqtt.Client
+            - uwb_interface: Optional[UWBHardwareInterface]
+
+            + connect(): void\n+ disconnect(): void
+            + start_uwb_interface(): bool
+            + publish_measurement(id, vector, ts?): void
+        }
+
+        class UWBHardwareInterface {
+            - config: UWBConfig
+            - measurement_callback: Callable
+
+            + start(): bool\n+ stop(): void
+            + set_measurement_callback(cb): void
+        }
+
+        class ProcessedUWBMeasurement {
+            + timestamp_ns: int
+            + anchor_id: int
+            + vector_local: List[float]
+        }
+
+        class UWBConfig {
+            + device_path: str
+            + baud_rate: int
+            + measurement_rate_hz: float
+        }
+    }
+}
+
+package "Server Orchestration" as server #LightCoral {
+    class ServerBringUp {
+        - anchor_config: AnchorConfig
+        - data: Dict[int, BinnedData]
+        - user_position: Optional[np.ndarray]
+        - _measurements: Dict[int, Queue[Measurement]]
+        - _filtered_binners: Dict[int, SlidingWindowBinner]
+        - _pgo_solver: PGOSolver
+        - uwb_mqtt_server: UWBMQTTServer
+        - _processor_thread: threading.Thread
+
+        + __init__(mqtt_config, window_size, jitter_std)
+        + start(): void\n+ stop(): void
+        + _handle_measurement(m: Measurement): void
+        + _process_measurements(): void
+    }
+}
+
+package "Visualization & Demos" as visualization #LightPink {
+    package "Floor Plan" as viz_floorplan {
+        class FloorplanView {
+            - scene: QGraphicsScene
+            - current_positions: Dict[str, np.ndarray]
+            - anchor_positions: Dict[int, np.ndarray]
+
+            + set_floorplan_image(path): void
+            + update_positions(pos): void
+            + set_homography(H): void
+        }
+
+        class ProjectedGridItem {
+            - scene_rect: QRectF\n- H: Optional[np.ndarray]
+
+            + boundingRect(): QRectF
+            + paint(painter, option, widget): void
+        }
+    }
+
+    package "PGO Widget" as pgo_widget {
+        class PgoPlotWidget {
+            - figure: matplotlib.figure.Figure
+            - positions_history: List[Dict]
+            - error_history: List[float]
+
+            + update_data(pos, error): void
+            + clear_data(): void
+        }
+    }
+
+    package "Adaptive Audio" as adaptive_audio {
+        class AdaptiveAudioController {
+            - gain_controller: GainController
+            - current_position: Optional[np.ndarray]
+
+            + update_position(pos): void
+            + get_zone_for_position(pos): str
+            + calculate_gain_for_zone(zone): float
+        }
+
+        class GainController {
+            - current_gain: float\n- target_gain: float\n- fade_steps: int
+
+            + set_target_gain(gain): void\n+ update(): void
+        }
+    }
+
+    package "Unified Demo" as unified_demo {
+        class UnifiedDemo {
+            - app_bus: AppBus
+            - services: Dict[str, Any]
+            - settings: Dict[str, Any]
+
+            + __init__()\n+ setup_services(): void
+            + create_widgets(): void
+            + start_server_bringup(): ServerBringUp
+        }
+
+        class AppBus {
+            - subscribers: Dict[str, List[Callable]]
+
+            + publish(event, data): void
+            + subscribe(event, cb): void
+            + unsubscribe(event, cb): void
+        }
+    }
+}
+
+' Relationships and Dependencies
+ServerBringUp --> UWBMQTTServer : orchestrates
+ServerBringUp --> SlidingWindowBinner : uses for binning
+ServerBringUp --> PGOSolver : uses for optimization
+ServerBringUp --> AnchorConfig : manages anchors
+ServerBringUp --> Measurement : processes
+ServerBringUp --> BinnedData : maintains state
+
+UWBMQTTServer --> MQTTConfig : configured with
+UWBMQTTServer --> Measurement : emits
+
+SlidingWindowBinner --> Measurement : processes
+SlidingWindowBinner --> BinnedData : creates
+SlidingWindowBinner --> BinningMetrics : tracks
+
+PGOSolver --> PGOResult : returns
+PGOSolver --> PGOTransforms : uses for anchoring
+
+UWBMQTTClient --> MQTTConfig : configured with
+UWBMQTTClient --> UWBHardwareInterface : optional hw interface
+UWBMQTTClient --> ProcessedUWBMeasurement : receives from hw
+
+UWBHardwareInterface --> UWBConfig : configured with
+UWBHardwareInterface --> ProcessedUWBMeasurement : produces
+
+' Edge creation
+AnchorEdges --> AnchorConfig : uses positions
+Transforms --> Measurement : transforms
+
+' Visualization
+FloorplanView --> ProjectedGridItem : contains overlay
+UnifiedDemo --> AppBus : event system
+UnifiedDemo --> ServerBringUp : starts server
+AdaptiveAudioController --> GainController : controls gain
+
+' Data flow arrows
+Measurement --> SlidingWindowBinner : flows to binning
+BinnedData --> PGOSolver : flows to optimization
+PGOResult --> FloorplanView : to visualization
+PGOResult --> PgoPlotWidget : to PGO plots
+PGOResult --> AdaptiveAudioController : to audio control
+
+' MQTT Flow
+UWBMQTTClient ..> UWBMQTTServer : MQTT: uwb/anchor/{id}/vector
+
+' Threading
+ServerBringUp --> "_processor_thread" : spawns thread
+ServerBringUp --> "_measurements_lock" : thread-safe queue
+
+' Configuration
+MQTTConfig --> UWBMQTTServer : configures MQTT
+MQTTConfig --> UWBMQTTClient : configures MQTT
+UWBConfig --> UWBHardwareInterface : configures hw
+
+' Inheritance
+QGraphicsItem <|-- ProjectedGridItem : Qt Graphics Item
+
+' Notes
+note as N1
+    **Architecture Overview:**
+    - ServerBringUp orchestrates pipeline
+    - Flow: MQTT → Binning → PGO → Visualization
+    - Thread-safe with separate MQTT/processing threads
+    - Supports multiple phones & 4 anchors
+    - Real-time positioning for audio/visual apps
+end note
+
+note as N2
+    **Design Patterns:**
+    - Observer: MQTT callbacks emit measurements
+    - Factory: Binner creation per phone
+    - Strategy: Configurable optimization methods
+    - Thread-safe State: Locks protect shared data
+end note
+
+note as N3
+    **Coordinate Systems:**
+    - Local: Anchor frame (x=forward, y=left, z=up)
+    - Global: Room frame (x=right, y=forward, z=up)
+    - Ground Truth: Known anchor positions in global frame
+end note
+
+@enduml

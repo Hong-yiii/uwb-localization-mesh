@@ -6,6 +6,7 @@
 # Document references
 - Interim&final_report/IS313 Final_report.pdf is our final report, give it a complete read through, this should be the foundation fo this website
 - docs/assets contains all images and videos to be included in the site.
+- randomdocs contains UML diagrams that need to be included.
 
 # Order of information i want you to include, you can use this to guide the flow of the pages
 I will create a multi-page site with the following structure:
@@ -20,6 +21,7 @@ I will create a multi-page site with the following structure:
 # General tips
 1. Dont focus too much on the code syntax, you may if neccessary, eg. you want to make a point that the user can create a UWB tracking applet in ___ lines of code
 2. Use UML and sequence diagrams to show archie, but dont go too in depth such that it cannot be rendered and easily understood
+3. For mermaid diagrams, they must be embedded within html tags for the rendering of mermaid.
 
 # Rules
 - if you are unsure, please quetion and ask me directly
@@ -28,3 +30,6 @@ I will create a multi-page site with the following structure:
 - whatever u use make sure it can be rendered inside github pages
 - Use a Jekyll theme for the website. I will start with the default Jekyll theme, `minima`.
 - Include all relevant images and videos from the `docs/assets` directory.
+- Expand on the content of each page.
+- Ensure the site is deployed as a multi-page site.
+- Add navigation to the site.
