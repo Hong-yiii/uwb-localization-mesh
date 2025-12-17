@@ -15,7 +15,7 @@ dependencies = [
     "rich>=13.0.0", # for enhanced CLI interface
     "pandas>=2.0.3",
     "seaborn>=0.13.2",
-    "pyqt5>=5.15.11; sys_platform == 'darwin'",  # macOS only, excluded on Raspberry Pi (Linux)
+    "pyqt5>=5.15.11; sys_platform == 'darwin'",  # macOS only, excluded on Linux and windows
     "opencv-python>=4.11.0.86",
 ]
 requires-python = ">=3.8"

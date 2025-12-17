@@ -7,9 +7,31 @@ import random
 
 class PlaylistController:
     def __init__(self):
-        self.playlist1 = []
-        self.playlist2 = []
-        self.playlist3 = []
+        # Playlist 1: Jazz (P1)
+        self.playlist1 = [
+            "P1 - Bad Ideas - Silent Film Dark - Kevin MacLeod.wav",
+            "P1 - Bad Ideas Distressed - Kevin MacLeod.wav",
+            "P1 - Baila Mi Cumbia - Jimmy Fontanez_Media Right Productions.wav",
+            "P1 - Ersatz Bossa John Deley and the 41 Players.wav",
+            "P1 - Hit the Lights - Twin Musicom.wav",
+            "P1 - Minor Mush - John Deley.wav"
+        ]
+        # Playlist 2: Classical (P2)
+        self.playlist2 = [
+            "P2 - Busy Strings - Kevin MacLeod.wav",
+            "P2 - Cinematic - Twin Musicom.wav",
+            "P2 - Hero Theme - Kevin MacLeod.wav",
+            "P2 - Serious Piano - Audionautix.wav",
+            "P2 - Bugle-Calls-Mess-Call-USAF-Heritage-of-America-Band.wav"
+        ]
+        # Playlist 3: Countryfolk (P3)
+        self.playlist3 = [
+            "P3 - All-Good-In-The-Wood-Audionautix.wav",
+            "P3 - Country-Cue-1-Audionautix.wav",
+            "P3 - Dobro-Mash-Audionautix.wav",
+            "P3 - Mariachi-Snooze-Kevin-MacLeod.wav",
+            "P3 - On My Way Home - The 126ers.wav"
+        ]
         self.playlist4 = []
         self.playlist5 = []
 

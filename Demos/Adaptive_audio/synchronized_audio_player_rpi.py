@@ -399,7 +399,7 @@ def main():
     
     parser = argparse.ArgumentParser(description="RPi Audio Player")
     parser.add_argument("--id", type=int, required=True, help="RPi ID (1,2=left; 0,3=right)")
-    parser.add_argument("--wav", default="crazy-carls-brickhouse-tavern.wav", help="WAV file to play")
+    parser.add_argument("--wav", default="P1 - Minor Mush - John Deley.wav", help="WAV file to play")
     parser.add_argument("--broker", default=DEFAULT_BROKER_IP, help="MQTT broker IP")
     
     args = parser.parse_args()

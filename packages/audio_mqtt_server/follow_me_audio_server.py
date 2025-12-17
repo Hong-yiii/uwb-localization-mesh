@@ -34,6 +34,9 @@ import numpy as np
 import paho.mqtt.client as mqtt
 import uuid
 
+# Import the playlist controller
+from .playlist_controller.playlist_controller import PlaylistController
+
 # Suppress MQTT and position logs logs after imports (to override basicConfig) - only show WARNING and above
 logging.getLogger().setLevel(logging.WARNING)
 logging.getLogger("Server_bring_up").setLevel(logging.WARNING)
@@ -67,14 +70,11 @@ class AdaptiveAudioServer:
         self.volumes = {0: 70, 1: 70, 2: 70, 3: 70}
         self._last_position: Optional[np.ndarray] = None
         
-        # Song queue management - using audio_files directory
-        self.song_queue = [
-            "audio_files/crazy-carls-brickhouse-tavern.wav",
-            "audio_files/funky-bossanova-guitar.wav", 
-            "audio_files/guitar-on-loop.mp3",
-            "audio_files/track-4-playlist-1.wav",
-            "audio_files/track-5-playlist-1.wav"
-        ]
+        # Initialize playlist controller for professional playlist management
+        self.playlist_controller = PlaylistController()
+        
+        # Song queue management - now using PlaylistController
+        self.song_queue = self.playlist_controller.get_playlist(1)  # Start with playlist 1
         self.current_track_index = 0
         self.current_playlist = 1
 
@@ -406,60 +406,12 @@ class AdaptiveAudioServer:
     
     def set_playlist(self, playlist_number: int):
         """
-        Set the current playlist and update the song queue.
+        Set the current playlist and update the song queue using PlaylistController.
         """
         self.current_playlist = playlist_number
         
-        # Update song queue based on playlist - using audio_files directory
-        if playlist_number == 1:
-            self.song_queue = [
-                "audio_files/crazy-carls-brickhouse-tavern.wav",
-                "audio_files/funky-bossanova-guitar.wav", 
-                "audio_files/guitar-on-loop.mp3",
-                "audio_files/track-4-playlist-1.wav",
-                "audio_files/track-5-playlist-1.wav"
-            ]
-        elif playlist_number == 2:
-            self.song_queue = [
-                "audio_files/track-1-playlist-2.wav",
-                "audio_files/track-2-playlist-2.wav",
-                "audio_files/track-3-playlist-2.wav",
-                "audio_files/track-4-playlist-2.wav",
-                "audio_files/track-5-playlist-2.wav"
-            ]
-        elif playlist_number == 3:
-            self.song_queue = [
-                "audio_files/track-1-playlist-3.wav",
-                "audio_files/track-2-playlist-3.wav",
-                "audio_files/track-3-playlist-3.wav",
-                "audio_files/track-4-playlist-3.wav",
-                "audio_files/track-5-playlist-3.wav"
-            ]
-        elif playlist_number == 4:
-            self.song_queue = [
-                "audio_files/track-1-playlist-4.wav",
-                "audio_files/track-2-playlist-4.wav",
-                "audio_files/track-3-playlist-4.wav",
-                "audio_files/track-4-playlist-4.wav",
-                "audio_files/track-5-playlist-4.wav"
-            ]
-        elif playlist_number == 5:
-            self.song_queue = [
-                "audio_files/track-1-playlist-5.wav",
-                "audio_files/track-2-playlist-5.wav",
-                "audio_files/track-3-playlist-5.wav",
-                "audio_files/track-4-playlist-5.wav",
-                "audio_files/track-5-playlist-5.wav"
-            ]
-        else:
-            # Default to playlist 1
-            self.song_queue = [
-                "audio_files/crazy-carls-brickhouse-tavern.wav",
-                "audio_files/funky-bossanova-guitar.wav", 
-                "audio_files/guitar-on-loop.mp3",
-                "audio_files/track-4-playlist-1.wav",
-                "audio_files/track-5-playlist-1.wav"
-            ]
+        # Update song queue using the professional playlist controller
+        self.song_queue = self.playlist_controller.get_playlist(playlist_number)
         
         # Reset to first track
         self.current_track_index = 0

@@ -31,7 +31,11 @@ DEFAULT_PASSWORD = "laptop"
 class RPiAudioPlayer:
     def __init__(self, rpi_id: int, wav_file: str, broker_ip: str = DEFAULT_BROKER_IP):
         self.rpi_id = rpi_id
-        self.wav_file = wav_file
+        # Auto-prepend directory path if not already included
+        if not wav_file.startswith("Demos/Audio_Library/"):
+            self.wav_file = f"Demos/Audio_Library/{wav_file}"
+        else:
+            self.wav_file = wav_file
         self.broker_ip = broker_ip
         self.current_volume = 70  # Start at 70%
         self.is_playing = False
@@ -268,8 +272,14 @@ class RPiAudioPlayer:
                             pygame.mixer.music.stop()
                             self.is_playing = False
                         
+                        # Auto-prepend directory path if not already included
+                        if not track_file.startswith("Demos/Audio_Library/"):
+                            full_track_path = f"Demos/Audio_Library/{track_file}"
+                        else:
+                            full_track_path = track_file
+                        
                         # Load new track
-                        pygame.mixer.music.load(track_file)
+                        pygame.mixer.music.load(full_track_path)
                         print(f"🎵 LOADED: {track_file}")
                         
                         # Resume playback if it was playing before
@@ -367,7 +377,7 @@ def main():
     
     parser = argparse.ArgumentParser(description="RPi Audio Player")
     parser.add_argument("--id", type=int, required=True, help="RPi ID (1,2=left; 0,3=right)")
-    parser.add_argument("--wav", default="crazy-carls-brickhouse-tavern.wav", help="WAV file to play")
+    parser.add_argument("--wav", default="P1 - Minor Mush - John Deley.wav", help="WAV file to play")
     parser.add_argument("--broker", default=DEFAULT_BROKER_IP, help="MQTT broker IP")
     
     args = parser.parse_args()

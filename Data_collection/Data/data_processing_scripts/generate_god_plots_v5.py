@@ -147,10 +147,10 @@ def estimate_positions_single_anchor(measurements: Dict[str, List[List[float]]],
                                    anchor_id: int,
                                    ground_truth: Tuple[float, float]) -> List[np.ndarray]:
     """
-    Estimate multiple positions using a single anchor to capture measurement variability.
-    For 1-anchor case, we transform each measurement to global coordinates and place
-    the phone at the measured distance in the direction of ground truth.
-    This captures the variability within the bin for proper SD calculation.
+    Estimate position using a single anchor with bin averaging.
+    For 1-anchor case, we first take the average of filtered measurements in the bin,
+    then transform to global coordinates and use the actual measured position.
+    This matches the approach used for multi-anchor PGO cases.
     """
     anchor_id_str = str(anchor_id)
     if anchor_id_str not in measurements:
@@ -160,40 +160,23 @@ def estimate_positions_single_anchor(measurements: Dict[str, List[List[float]]],
     if not vectors:
         return []
     
-    # Transform measurements to global coordinates
-    global_vectors = []
-    for vector in vectors:
-        local_vector = np.array(vector)
-        try:
-            _, _, global_vector = create_relative_measurement(anchor_id, 0, local_vector)
-            global_vectors.append(global_vector)
-        except ValueError:
-            continue
+    # First: Calculate the mean of the bin in local coordinates (same as multi-anchor approach)
+    local_mean = np.mean(vectors, axis=0)
     
-    if not global_vectors:
+    # Then: Transform the bin mean to global coordinates
+    try:
+        _, _, global_mean_vector = create_relative_measurement(anchor_id, 0, local_mean)
+    except ValueError:
         return []
     
-    # Estimate position for each measurement to capture variability
+    # Use actual measured position (anchor position + measurement vector)
     anchor_pos_2d = DEFAULT_ANCHOR_POSITIONS[anchor_id][:2]
-    ground_truth_2d = np.array(ground_truth)
     
-    # Direction from anchor to ground truth
-    direction = ground_truth_2d - anchor_pos_2d
-    if np.linalg.norm(direction) > 0:
-        direction = direction / np.linalg.norm(direction)
-    else:
-        # If ground truth is at anchor position, use arbitrary direction
-        direction = np.array([1.0, 0.0])
+    # Create single position estimate using the bin mean
+    estimated_pos = anchor_pos_2d + global_mean_vector[:2]  # Only use x,y components
     
-    # Create position estimates for each measurement
-    estimated_positions = []
-    for global_vector in global_vectors:
-        distance = np.linalg.norm(global_vector)
-        # Place phone at measured distance in ground truth direction
-        estimated_pos = anchor_pos_2d + direction * distance
-        estimated_positions.append(estimated_pos)
-    
-    return estimated_positions
+    # Return as single-element list to maintain consistency with function signature
+    return [estimated_pos]
 
 def find_worst_case_combinations_with_masking(data_group: List[Dict], 
                                             ground_truth: Tuple[float, float]) -> Dict[int, List[int]]:
@@ -441,7 +424,7 @@ def create_god_plot_v5(orientation: str, data: List[Dict], output_dir: str):
                        zorder=6)
     
     # Add summary statistics text
-    summary_text = f"Orientation {orientation} - Worst Case Analysis (Masking):\n"
+    summary_text = f"Orientation {orientation} - Worst Case Analysis (Realistic Measurements):\n"
     
     for num_anchors in sorted(plot_colors.keys()):
         anchor_errors = []
@@ -467,7 +450,7 @@ def create_god_plot_v5(orientation: str, data: List[Dict], output_dir: str):
     ax.set_xlabel('X Position (cm)', fontsize=14)
     ax.set_ylabel('Y Position (cm)', fontsize=14)
     ax.set_title(f'God Plot - Orientation {orientation}\n'
-                f'PGO Accuracy vs Ground Truth (Worst Case Selection via Measurement Masking)', fontsize=16)
+                f'PGO Accuracy vs Ground Truth (Realistic Measurements, Worst Case Selection)', fontsize=16)
     ax.grid(True, alpha=0.3)
     ax.legend(loc='upper right', fontsize=12)
     
@@ -485,6 +468,117 @@ def create_god_plot_v5(orientation: str, data: List[Dict], output_dir: str):
     plt.close()
     
     print(f"\nSaved god plot v5 for orientation {orientation} to {output_path}")
+
+def create_detailed_comparison_table(data: List[Dict], output_dir: str):
+    """Create detailed PGO vs Single Anchor comparison table matching the format from pgo_vs_single_anchor_analysis.py"""
+    
+    # Group data by ground truth position and orientation
+    position_groups = defaultdict(list)
+    for row in data:
+        pos_key = (row['ground_truth_x'], row['ground_truth_y'], row['orientation'])
+        position_groups[pos_key].append(row)
+    
+    # Collect results for each position/orientation group
+    table_results = []
+    
+    for pos_key, data_group in position_groups.items():
+        ground_truth_x, ground_truth_y, orientation = pos_key
+        ground_truth = (ground_truth_x, ground_truth_y)
+        
+        # Get PGO results (from CSV)
+        pgo_positions = []
+        pgo_errors = []
+        for row in data_group:
+            pgo_pos = np.array([row['pgo_x'], row['pgo_y']])
+            pgo_positions.append(pgo_pos)
+            gt_pos = np.array([ground_truth_x, ground_truth_y])
+            pgo_error = np.linalg.norm(pgo_pos - gt_pos)
+            pgo_errors.append(pgo_error)
+        
+        # Find worst-case single anchor combinations
+        worst_combinations = find_worst_case_combinations_with_masking(data_group, ground_truth)
+        
+        # Get single anchor results (worst case for 1 anchor)
+        worst_anchor_errors = []
+        worst_anchor_id = None
+        
+        if 1 in worst_combinations:
+            worst_anchor_id = worst_combinations[1][0]
+            
+            for row in data_group:
+                available_anchors = list(map(int, row['filtered_data']['measurements'].keys()))
+                if worst_anchor_id not in available_anchors:
+                    continue
+                
+                pos_estimates = estimate_positions_single_anchor(
+                    row['filtered_data']['measurements'], 
+                    worst_anchor_id, 
+                    ground_truth
+                )
+                
+                for pos_estimate in pos_estimates:
+                    error = np.sqrt((pos_estimate[0] - ground_truth_x)**2 + 
+                                  (pos_estimate[1] - ground_truth_y)**2)
+                    worst_anchor_errors.append(error)
+        
+        # Calculate statistics
+        mean_pgo_x = np.mean([pos[0] for pos in pgo_positions])
+        mean_pgo_y = np.mean([pos[1] for pos in pgo_positions])
+        mean_pgo_error = np.mean(pgo_errors)
+        pgo_stderr = np.std(pgo_errors) / np.sqrt(len(pgo_errors)) if len(pgo_errors) > 1 else 0.0
+        
+        if worst_anchor_errors:
+            mean_worst_error = np.mean(worst_anchor_errors)
+            worst_stderr = np.std(worst_anchor_errors) / np.sqrt(len(worst_anchor_errors)) if len(worst_anchor_errors) > 1 else 0.0
+        else:
+            mean_worst_error = 0.0
+            worst_stderr = 0.0
+            worst_anchor_id = 0
+        
+        table_results.append({
+            'ground_truth_x': int(ground_truth_x),
+            'ground_truth_y': int(ground_truth_y),
+            'orientation': orientation,
+            'count': len(data_group),
+            'mean_pgo_x': mean_pgo_x,
+            'mean_pgo_y': mean_pgo_y,
+            'mean_pgo_error': mean_pgo_error,
+            'pgo_stderr': pgo_stderr,
+            'worst_anchor_id': worst_anchor_id if worst_anchor_id is not None else 0,
+            'mean_worst_error': mean_worst_error,
+            'worst_stderr': worst_stderr
+        })
+    
+    # Sort results for consistent output
+    table_results.sort(key=lambda x: (x['ground_truth_x'], x['ground_truth_y'], x['orientation']))
+    
+    # Create the formatted table
+    table_lines = []
+    table_lines.append("")
+    table_lines.append("=" * 120)
+    table_lines.append("PGO vs SINGLE ANCHOR ACCURACY ANALYSIS RESULTS (2D - X,Y only)")
+    table_lines.append("Generated from God Plot Script with Realistic Bin Averaging")
+    table_lines.append("=" * 120)
+    table_lines.append("Position     PGO X    PGO Y    Orient   Count  PGO Error    PGO StdErr   Worst Anchor Worst Error  Worst StdErr")
+    table_lines.append("-" * 120)
+    
+    for result in table_results:
+        row = f"({result['ground_truth_x']:6d},{result['ground_truth_y']:6d},{result['orientation']}) {result['mean_pgo_x']:6.1f}    {result['mean_pgo_y']:6.1f}    {result['orientation']}        {result['count']}      {result['mean_pgo_error']:6.1f}        {result['pgo_stderr']:4.1f}          {result['worst_anchor_id']}            {result['mean_worst_error']:6.1f}        {result['worst_stderr']:4.1f}"
+        table_lines.append(row)
+    
+    table_lines.append("=" * 120)
+    table_lines.append("")
+    
+    # Save table
+    table_content = "\n".join(table_lines)
+    output_path = os.path.join(output_dir, 'pgo_vs_single_anchor_detailed_table_from_godplot.txt')
+    with open(output_path, 'w') as f:
+        f.write(table_content)
+    
+    print(f"Detailed comparison table saved to {output_path}")
+    print(table_content)
+    
+    return table_content
 
 def main():
     """Main function to generate all god plots with proper measurement masking."""
@@ -511,6 +605,12 @@ def main():
     print(f"\n{'='*60}")
     print(f"All god plots v5 generated successfully in {output_dir}")
     print(f"{'='*60}")
+    
+    # Generate detailed comparison table
+    print(f"\n{'='*60}")
+    print(f"Generating detailed comparison table...")
+    print(f"{'='*60}")
+    create_detailed_comparison_table(data, output_dir)
 
 if __name__ == "__main__":
     main()

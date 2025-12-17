@@ -73,7 +73,7 @@ def transform_local_to_global(anchor_id: int, local_vector: np.ndarray) -> np.nd
 
 def calculate_single_anchor_position(anchor_id: int, local_measurements: List[np.ndarray]) -> np.ndarray:
     """
-    Calculate phone position using only one anchor (2D only - X,Y coordinates).
+    Calculate phone position using only one anchor with proper bin averaging (2D only - X,Y coordinates).
     
     Args:
         anchor_id: ID of the anchor
@@ -85,15 +85,15 @@ def calculate_single_anchor_position(anchor_id: int, local_measurements: List[np
     if not local_measurements:
         return np.array([np.nan, np.nan])
     
-    # Transform all measurements to global frame
-    global_measurements = [transform_local_to_global(anchor_id, local_vec) for local_vec in local_measurements]
+    # First: Calculate mean of local measurements (bin averaging)
+    mean_local_measurement = np.mean(local_measurements, axis=0)
     
-    # Calculate mean measurement vector (only X,Y components)
-    mean_measurement = np.mean(global_measurements, axis=0)[:2]  # Only X,Y
+    # Then: Transform the mean to global coordinates
+    mean_global_measurement = transform_local_to_global(anchor_id, mean_local_measurement)
     
-    # Phone position = anchor position + measurement vector (only X,Y)
+    # Phone position = anchor position + mean measurement vector (only X,Y)
     anchor_pos = ANCHOR_POSITIONS[anchor_id][:2]  # Only X,Y
-    phone_position = anchor_pos + mean_measurement
+    phone_position = anchor_pos + mean_global_measurement[:2]  # Only X,Y
     
     return phone_position
 
