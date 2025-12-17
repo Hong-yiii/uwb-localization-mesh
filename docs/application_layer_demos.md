@@ -11,6 +11,8 @@ permalink: /application_layer_demos/
 - [Application Layer (Demos)](application_layer_demos.md)
 - [Data Collection and Validation](data_collection_and_validation.md)
 - [Software Engineering](software_engineering.md)
+- [Location-Aware Applications](location_aware_applications.md)
+- [Final Report](final_report.md)
 
 ## 4. Application Layer (Demos)
 

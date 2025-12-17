@@ -11,6 +11,8 @@ permalink: /system_architecture/
 - [Application Layer (Demos)](application_layer_demos.md)
 - [Data Collection and Validation](data_collection_and_validation.md)
 - [Software Engineering](software_engineering.md)
+- [Location-Aware Applications](location_aware_applications.md)
+- [Final Report](final_report.md)
 
 ## 2. System Architecture
 
@@ -91,5 +93,4 @@ This UML diagram provides a more detailed view of the classes and their relation
 
 - **Latency:** Sub-100ms position updates for real-time applications
 - **Accuracy:** Sub-20cm positioning accuracy with 4-anchor setup
-- **Scalability:** Supports up to 16 anchors in multi-room deployments
 - **Reliability:** Automatic failover and outlier rejection for robust operation

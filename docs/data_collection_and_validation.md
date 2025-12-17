@@ -11,6 +11,8 @@ permalink: /data_collection_and_validation/
 - [Application Layer (Demos)](application_layer_demos.md)
 - [Data Collection and Validation](data_collection_and_validation.md)
 - [Software Engineering](software_engineering.md)
+- [Location-Aware Applications](location_aware_applications.md)
+- [Final Report](final_report.md)
 
 ## 5. Data Collection and Validation
 

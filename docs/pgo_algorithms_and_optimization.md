@@ -11,6 +11,8 @@ permalink: /pgo_algorithms_and_optimization/
 - [Application Layer (Demos)](application_layer_demos.md)
 - [Data Collection and Validation](data_collection_and_validation.md)
 - [Software Engineering](software_engineering.md)
+- [Location-Aware Applications](location_aware_applications.md)
+- [Final Report](final_report.md)
 
 ## 3. PGO, Algorithms, and Optimization
 
@@ -18,13 +20,6 @@ At the heart of our middleware is a Pose Graph Optimization (PGO) algorithm. Thi
 
 The core idea behind PGO is to represent the relationships between different measurements as a graph. Each anchor and the transmitter are nodes in the graph, and the measurements between them are edges. Since each measurement is slightly inaccurate, the graph will have inconsistencies. PGO attempts to correct these inconsistencies by adjusting the nodes (the positions of the anchors and the transmitter) to minimize the overall error in the graph.
 
-### PGO Constraint Diagram
-
-The following diagram illustrates the constraints used in our PGO algorithm.
-
-<div class="mermaid">
-  {{ "/assets/PGO_CONSTRAINT_DIAGRAM.txt" | relative_url | read_file }}
-</div>
 
 ### Optimizing PGO Inputs
 
@@ -50,7 +45,7 @@ The following "God Plots" illustrate the performance improvement achieved throug
 ![God Plot Orientation C](./assets/god_plot_v5_orientation_C.png)
 *Fig 3: Performance improvement with increasing number of anchors (Orientation C)*
 
-#### Orientation U (Unknown)
+#### Orientation U (Phone camera facing upwards)
 ![God Plot Orientation U](./assets/god_plot_v5_orientation_U.png)
 *Fig 4: Performance improvement with increasing number of anchors (Orientation U)*
 
