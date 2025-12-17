@@ -11,8 +11,8 @@ permalink: /location_aware_applications/
 - [Application Layer (Demos)](application_layer_demos.md)
 - [Data Collection and Validation](data_collection_and_validation.md)
 - [Software Engineering](software_engineering.md)
-- [Final Report](final_report.md)
 - [Location-Aware Applications](location_aware_applications.md)
+- [Final Report](final_report.md)
 
 ## Location-Aware Applications
 
@@ -21,8 +21,8 @@ Our UWB localization middleware enables developers to create immersive, location
 ### Real-Time Location Tracking
 
 <div style="text-align: center; margin: 20px 0;">
-  <video width="80%" controls>
-    <source src="assets/raw_data_render.mp4" type="video/mp4">
+  <video width="80%" controls preload="metadata">
+    <source src="https://raw.githubusercontent.com/Hong-yiii/uwb-localization-mesh/main/docs/assets/raw_data_render.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
   <p><em>Real-time visualization of user movement captured by our localization system</em></p>
@@ -36,8 +36,8 @@ Building on this precise location data, it unlocks new possibilies for user inte
 This serves as an example to a novel user interface.
 
 <div style="text-align: center; margin: 20px 0;">
-  <video width="80%" controls>
-    <source src="assets/sample_application.mp4" type="video/mp4">
+  <video width="80%" controls preload="metadata">
+    <source src="https://raw.githubusercontent.com/Hong-yiii/uwb-localization-mesh/main/docs/assets/sample_application.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
   <p><em>Zone-based audio application with personalized playlists for different areas</em></p>

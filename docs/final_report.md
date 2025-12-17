@@ -18,7 +18,7 @@ permalink: /final_report/
 
 The complete final report for the UWB Localization Mesh project is available below:
 
-### [Download Final Report PDF](assets/IS313%20Final_report.pdf)
+### [Download Final Report PDF](https://raw.githubusercontent.com/Hong-yiii/uwb-localization-mesh/main/docs/assets/IS313%20Final_report.pdf)
 
 This comprehensive report covers the entire project lifecycle, including:
 
