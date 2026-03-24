@@ -25,7 +25,7 @@ class AppBus(QObject):
     
     All signals use Qt's signal/slot mechanism for thread-safe delivery.
     Widgets subscribe to signals they need and emit signals for commands/events.
-    MainWindow routes command signals to DummyServer methods.
+    MainWindow routes command signals to the live server (ServerBringUp) methods.
     """
     
     # ============================================================
@@ -88,11 +88,10 @@ class AppBus(QObject):
     speakerVolumesUpdated = Signal(dict)   # {speaker_id: volume, ...} - all speaker volumes at once
     
     # ============================================================
-    # SERVER & SIMULATION STATUS
+    # SERVER STATUS
     # ============================================================
     serverStatusChanged = Signal(str)      # "running", "stopped", "error", "audio_playing"
-    simulationSpeedChanged = Signal(float)  # speed multiplier
-    
+
     # ============================================================
     # FLOORPLAN INTERACTION EVENTS
     # ============================================================

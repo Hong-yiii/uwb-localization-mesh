@@ -37,8 +37,13 @@ def load_settings():
     
     _set_default(settings, "pgo/refresh_rate_fps", 30)
     _set_default(settings, "pgo/max_history_points", 1000)
-    
-    _set_default(settings, "server/simulation_speed", 1.0)
+
+    # MQTT broker (UnifiedDemo + Server_bring_up_with_Audio — use laptop IP for real anchors)
+    _set_default(settings, "mqtt/broker", "localhost")
+    _set_default(settings, "mqtt/port", 1884)
+    _set_default(settings, "mqtt/username", "laptop")
+    _set_default(settings, "mqtt/password", "laptop")
+
     _set_default(settings, "server/phone_node_id", 0)
     _set_default(settings, "server/poll_rate_hz", 20)
     
