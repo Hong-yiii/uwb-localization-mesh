@@ -2,9 +2,13 @@
 
 This repository contains **reusable packages** (e.g., `PGO`, `localization‑algos`, MQTT clients/servers, audio control) plus **bring‑up scripts** and **demos** that run across **RPi clients** and a **Laptop server**.
 
+**Scope:** The **core** of this repository is **UWB indoor localization** (measurements → binning → edges → PGO → position). Everything else—**audio MQTT, PyQt UIs, floorplan/zone demos**—is built **on top of** that base: separate packages and bring-ups (`packages/audio_mqtt_*`, [`Demos/UnifiedDemo/server_bring_up_with_audio.py`](Demos/UnifiedDemo/server_bring_up_with_audio.py), `Demos/*`) so you can run **localization-only** with no demo or audio. Step-by-step hardware setup: **[`dummies_setup_guide.md`](dummies_setup_guide.md)**.
+
+**Unified Demo** ([`Demos/UnifiedDemo/`](Demos/UnifiedDemo/README.md)) is a **reference application** for developers: it shows one way to **import the laptop bring-up** (`ServerBringUpProMax`), run it in-process, and attach a multi-tab PyQt front-end (`AppBus`, widgets under `packages/`). It is not the definition of the product—the **product** is the localization pipeline and reusable libraries.
+
 - **Packages**: import‑safe libraries with no side effects on import (pure modules).
 - **Bring‑ups**: scripts that instantiate device roles (RPi client / Laptop server) and wire MQTT + state.
-- **Demos**: thin scripts that call into running components to visualize or sonify results.
+- **Demos**: examples that compose packages and servers; the Unified Demo in particular illustrates **application-layer** integration on top of the UWB core.
 - **Data_collection**: follows the same pattern as a demo for capturing data for evaluation.
 
 ---
@@ -47,8 +51,8 @@ flowchart TD
     end
 
     %% Application Layer
-    subgraph "Application Layer"
-        VIZ[Unified Demo (PyQt)<br/>PGO + floorplan + zones]
+    subgraph "Application Layer (examples on top of UWB core)"
+        VIZ[Unified Demo — ref PyQt app<br/>embeds server + widgets]
         AUDIO_FOLLOW[Audio MQTT + widgets<br/>Follow / adaptive / zone DJ]
         AUDIO_ADAPTIVE[packages/audio_*<br/>Server & client]
         DATA_COLLECTION[Data_collection<br/>Logging & evaluation]
@@ -192,28 +196,28 @@ Pose Graph Optimization over anchors + phone nodes; outputs consistent **global 
 _Main entry points:_ `PGOSolver.add_edges(edges)`, `solve() -> GraphSolution`.
 
 **`packages/audio-mqtt-server` / `packages/audio-mqtt-client`**  
-MQTT topics for high‑level audio control (e.g., follow‑me, adaptive mixing).  
-_Main entry points:_ `AudioMqttServer.start()`, `AudioMqttClient.send(route_cmd)`.
+Laptop: `AdaptiveAudioServer` + `ServerBringUpProMax` publish JSON commands. RPi: `synchronized_audio_player_rpi.py` subscribes and plays.  
+_Details:_ [`packages/audio_mqtt_server/README.md`](packages/audio_mqtt_server/README.md), [`packages/audio_mqtt_client/README.md`](packages/audio_mqtt_client/README.md).
 
 ---
 
 ## 🧯 Bring‑ups (device roles)
 
-**Client (RPi) — `Client_bring_up.py`**  
-Instantiates an RPi node that publishes measurements and (optionally) consumes audio commands.
-- `node_id = <int>`
-- `uwb_mqtt_client = UwbMqttClient()`
-- `audio_mqtt_client = AudioMqttClient()`
-- `position = [x, y, z]` (optional local telemetry)
+**Client (RPi) — UWB: `Anchor_bring_up.py`**  
+Each anchor Raspberry Pi runs this script to read the UWB module (USB serial) and publish measurements to MQTT (`uwb/anchor/{id}/vector`, broker port **1884**). See `Anchor_bring_up.md` / repository anchor docs for `ANCHOR_ID`, `--broker`, and `SERIAL_PORT`.
+
+**Client (RPi) — Audio (optional, separate process)**  
+There is no single combined “UWB + audio” bring-up script. For corner speakers, run **a second process** on each Pi:
+
+- `packages/audio_mqtt_client/synchronized_audio_player_rpi.py --id <0-3> --wav <file> --broker <BROKER_IP>`
+- Subscribes to `audio/commands/rpi_{id}` and `audio/commands/broadcast`; uses the same broker port (**1884**) and default credentials (**`laptop` / `laptop`**) as [`server_bring_up_with_audio.py`](Demos/UnifiedDemo/server_bring_up_with_audio.py) / Unified Demo unless you change Mosquitto.
+- WAV paths default under `Demos/Audio_Library/`; channel mapping (left/right per RPi) is documented in [`packages/audio_mqtt_client/README.md`](packages/audio_mqtt_client/README.md).
 
 **Server (Laptop) — `Server_bring_up.py`**  
-Central ingest + processing + outputs for demos.
-- `nodes = {0:[x,y,z], 1:[x,y,z], ...}` (ground truth anchors)
-- `uwb_mqtt_server = UwbMqttServer()` → **bin** measurements per phone
-- `data = {phone_id: BinnedData, ...}` (rolling 1‑second windows)
-- `localization_algos` → edges → `PGO` → `GraphSolution`
-- `audio_mqtt_server = AudioMqttServer()` + `audio_player = ... (TBD)`
-- `user_position = [x, y, z]` (derived from PGO)
+Localization only: MQTT ingest → binning → edges → PGO → `user_position`. No audio MQTT publishing.
+
+**Server (Laptop) — [`Demos/UnifiedDemo/server_bring_up_with_audio.py`](Demos/UnifiedDemo/server_bring_up_with_audio.py) (`ServerBringUpProMax`)**  
+Same pipeline as above, plus **`AdaptiveAudioServer`** and MQTT publishing of audio commands for the RPis. Run this module **standalone** (`python Demos/UnifiedDemo/server_bring_up_with_audio.py`) for a headless server, or **embed** it via [`Demos/UnifiedDemo/main_demo.py`](Demos/UnifiedDemo/main_demo.py) (reference PyQt app).
 
 ---
 
@@ -221,7 +225,7 @@ Central ingest + processing + outputs for demos.
 
 Index: **[`Demos/README.md`](Demos/README.md)**.
 
-**`Demos/UnifiedDemo`** — **recommended** PyQt app with **embedded** `ServerBringUpProMax` (`Server_bring_up_with_Audio.py`): PGO plot, adaptive audio, zone DJ. **Do not** start a second laptop server process while it runs. Full deployment steps: **[`Demos/UnifiedDemo/README.md`](Demos/UnifiedDemo/README.md)**.
+**`Demos/UnifiedDemo`** — **reference PyQt app**: embeds `ServerBringUpProMax` and wires `AppBus` + tab widgets to the localization + optional audio stack—useful as a **template** for your own UI. **Do not** start a second laptop server process while it runs. Deploy/run: **[`Demos/UnifiedDemo/README.md`](Demos/UnifiedDemo/README.md)**.
 
 **`Demos/Basic_render_graph`** — **deprecated** matplotlib view; superseded by Unified Demo. See that folder’s README.  
 **`Data_collection`** — logging and evaluation.
@@ -238,11 +242,16 @@ mosquitto -c mosquitto.conf
 python Anchor_bring_up.py --anchor-id 0 --broker <BROKER_IP>
 # … repeat for anchors 1–3
 
-# 3) GUI + embedded server (same machine as broker is common)
+# 2b) Optional — audio on each RPi (second terminal per Pi; see Unified Demo README)
+# python packages/audio_mqtt_client/synchronized_audio_player_rpi.py --id 0 --wav "<file>.wav" --broker <BROKER_IP>
+
+# 3) GUI + embedded ServerBringUpProMax (same machine as broker is common)
 python Demos/UnifiedDemo/main_demo.py
 ```
 
-**Run order — other demos** that expect a **standalone** server: broker → `Server_bring_up.py` / `Server_bring_up_with_Audio.py` → anchors → demo script.
+For **how the Unified Demo wires localization to audio** (tabs, MQTT topics, RPi clients), see **[`Demos/UnifiedDemo/README.md`](Demos/UnifiedDemo/README.md)** — **section 3 (Anchors — audio players)** and **How audio works in the Unified Demo**.
+
+**Run order — other demos** that expect a **standalone** server: broker → `Server_bring_up.py` (localization-only) or `python Demos/UnifiedDemo/server_bring_up_with_audio.py` (with audio MQTT) → anchors → demo script.
 
 Always start the **broker** first, then any **standalone** server, then **anchors**.
 

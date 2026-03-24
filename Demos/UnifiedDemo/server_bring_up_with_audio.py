@@ -1,7 +1,18 @@
 """
-Server bring-up script that coordinates MQTT, binning, and PGO, audio control.
-Maintains global state and orchestrates the full processing pipeline.
+Laptop server for the Unified Demo: MQTT ingest, binning, PGO, and audio command publishing.
+
+Lives under ``Demos/UnifiedDemo/`` next to ``main_demo.py``. Import ``ServerBringUpProMax`` from
+here, or run this file directly as a headless server (repo root is added to ``sys.path`` below).
+
+For **localization-only** (no audio MQTT), use ``Server_bring_up.py`` at the repository root.
 """
+
+import sys
+import os
+
+_repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
 
 import json
 import logging

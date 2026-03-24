@@ -38,7 +38,7 @@ def load_settings():
     _set_default(settings, "pgo/refresh_rate_fps", 30)
     _set_default(settings, "pgo/max_history_points", 1000)
 
-    # MQTT broker (UnifiedDemo + Server_bring_up_with_Audio — use laptop IP for real anchors)
+    # MQTT broker (UnifiedDemo / server_bring_up_with_audio — use laptop IP for real anchors)
     _set_default(settings, "mqtt/broker", "localhost")
     _set_default(settings, "mqtt/port", 1884)
     _set_default(settings, "mqtt/username", "laptop")
