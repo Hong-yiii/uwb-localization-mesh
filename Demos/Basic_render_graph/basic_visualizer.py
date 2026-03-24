@@ -1,11 +1,8 @@
 """
-Basic UWB Position Visualizer
+Basic UWB Position Visualizer (deprecated).
 
-A clean, simple visualization of UWB positioning data with:
-- Real-time grid display
-- Smooth position updates
-- Clear trajectory tracking
-- Minimal, focused UI
+Superseded by Demos/UnifiedDemo/main_demo.py (tabbed PyQt app with PGO plot and more).
+Kept for a minimal matplotlib-only path during bring-up debugging.
 """
 import matplotlib
 # matplotlib.use("QtAgg")

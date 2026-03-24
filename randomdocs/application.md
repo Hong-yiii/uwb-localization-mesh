@@ -1,5 +1,7 @@
 # UWB Localization Platform - Application Architecture
 
+> **Note:** The standalone `Demos/PyQT_Visualisation/` demo was removed; the shipping desktop app is **`Demos/UnifiedDemo/`** (PyQt5 tabs: PGO plot, adaptive audio, zone DJ).
+
 ## Marketing Overview: Build Amazing Apps in Minutes, Not Months
 
 ```mermaid
@@ -10,11 +12,11 @@ graph TB
     end
     
     subgraph "🎨 Your Custom App"
-        PYQT[🖼️ PyQT Visualization Demo<br/>• Load any floorplan image<br/>• Click 4 corners = instant mapping<br/>• Drag & drop interactive zones<br/>• Real-time position tracking]
+        APP[🖼️ Unified Demo (PyQt)<br/>• Live PGO path<br/>• Floorplan + homography<br/>• Zones & spatial audio tabs]
     end
     
-    CORE --> PYQT
-    SERVER --> PYQT
+    CORE --> APP
+    SERVER --> APP
     
     CORE -.->|"Just import & use"| TEXT1["✨ No complex setup<br/>✨ No reinventing algorithms<br/>✨ Focus on YOUR features"]
     
@@ -23,7 +25,7 @@ graph TB
     classDef benefit fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
     
     class CORE,SERVER platform
-    class PYQT app
+    class APP app
     class TEXT1 benefit
 ```
 

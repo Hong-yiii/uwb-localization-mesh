@@ -74,7 +74,7 @@ MQTT messages published to RPi clients:
 ## Architecture Flow
 
 ```
-ServerBringUpProMax (Server_bring_up_with_Audio.py)
+ServerBringUpProMax (Demos/UnifiedDemo/server_bring_up_with_audio.py)
     ├─ Tracks user position via UWB/PGO
     ├─ Runs _adaptive_audio_loop() or _zone_dj_loop() in background threads
     │
@@ -95,10 +95,10 @@ ServerBringUpProMax (Server_bring_up_with_Audio.py)
 
 ## Usage
 
-The audio server is used by `ServerBringUpProMax`:
+The audio server is used by `ServerBringUpProMax` (see [`Demos/UnifiedDemo/server_bring_up_with_audio.py`](../../Demos/UnifiedDemo/server_bring_up_with_audio.py)). Ensure the repo root is on `sys.path`, and either add `Demos/UnifiedDemo` to `sys.path` or run from that directory:
 
 ```python
-from Server_bring_up_with_Audio import ServerBringUpProMax
+from server_bring_up_with_audio import ServerBringUpProMax
 from packages.uwb_mqtt_server.config import MQTTConfig
 
 server = ServerBringUpProMax(mqtt_config=MQTTConfig(...))

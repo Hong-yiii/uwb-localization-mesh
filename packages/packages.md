@@ -89,3 +89,7 @@ client.publish_measurement(anchor_id=0, local_vector=[x, y, z])
 - Use type hints throughout
 - Follow PEP 8 style guide
 - Keep functions pure where possible
+
+## Reference application (Unified Demo)
+
+**Localization libraries above are the core.** The [**Unified Demo**](../Demos/UnifiedDemo/README.md) is a **developer reference**: it composes `pgo_data_widget`, `adaptive_audio_widget`, `zone_dj_widget`, `viz_floorplan`, etc., and **imports** `ServerBringUpProMax` in-process to show how an application can sit on top of the UWB stack. Use it as a pattern for your own integration, not as the only way to ship the system.

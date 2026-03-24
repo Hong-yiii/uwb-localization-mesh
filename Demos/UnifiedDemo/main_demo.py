@@ -20,13 +20,13 @@ def _import_pkg_fallback():
     pkgs_path = os.path.join(repo_root, "packages")
     if os.path.isdir(pkgs_path) and pkgs_path not in sys.path:
         sys.path.insert(0, pkgs_path)
-    
-    # Add Demos directory (for importing DummyServerBringUp)
-    demos_path = os.path.join(repo_root, "Demos")
-    if os.path.isdir(demos_path) and demos_path not in sys.path:
-        sys.path.insert(0, demos_path)
-    
-    # Also add repo root (for absolute imports)
+
+    # This directory (server_bring_up_with_audio.py lives here)
+    unified_dir = os.path.abspath(os.path.dirname(__file__))
+    if unified_dir not in sys.path:
+        sys.path.insert(0, unified_dir)
+
+    # Also add repo root (for packages.* imports in the server module)
     if repo_root not in sys.path:
         sys.path.insert(0, repo_root)
 
@@ -37,137 +37,46 @@ _import_pkg_fallback()
 from appbus import AppBus
 from services.settings import load_settings
 
-def _start_server_bringup(use_dummy=False, settings=None, simulation_speed=None):
-    """Start the server (DummyServerBringUpProMax for simulation or real ServerBringUp)."""
-    if use_dummy:
-        # Try multiple import strategies
-        sb = None
-        
-        # Strategy 1: Direct import from DummyServerBringUp module
-        try:
-            import DummyServerBringUp
-            if hasattr(DummyServerBringUp, 'DummyServerBringUpProMax'):
-                DummyServerBringUpProMax = DummyServerBringUp.DummyServerBringUpProMax
-            elif hasattr(DummyServerBringUp, 'DummyServerBringUp'):
-                DummyServerBringUpProMax = DummyServerBringUp.DummyServerBringUp
-            else:
-                raise AttributeError("No DummyServerBringUp class found")
-            
-            # Use provided speed, or fall back to settings, or default
-            if simulation_speed is not None:
-                speed = simulation_speed
-            else:
-                speed = settings.value("server/simulation_speed", 0.01, type=float) if settings else 0.01
-            phone_node_id = settings.value("server/phone_node_id", 0, type=int) if settings else 0
-            sb = DummyServerBringUpProMax(
-                simulation_speed=speed,
-                phone_node_id=phone_node_id
-            )
-            if hasattr(sb, "start"):
-                sb.start()
-            return sb
-        except ImportError as e:
-            print(f"[UnifiedDemo] DummyServerBringUp import failed: {e}")
-        except AttributeError as e:
-            print(f"[UnifiedDemo] DummyServerBringUp class not found: {e}")
-        except Exception as e:
-            print(f"[UnifiedDemo] DummyServerBringUpProMax failed to load: {e}")
-        
-        # Strategy 2: Try as package import
-        try:
-            from Demos.DummyServerBringUp import DummyServerBringUpProMax
-            # Use provided speed, or fall back to settings, or default
-            if simulation_speed is not None:
-                speed = simulation_speed
-            else:
-                speed = settings.value("server/simulation_speed", 0.01, type=float) if settings else 0.01
-            phone_node_id = settings.value("server/phone_node_id", 0, type=int) if settings else 0
-            sb = DummyServerBringUpProMax(
-                simulation_speed=speed,
-                phone_node_id=phone_node_id
-            )
-            if hasattr(sb, "start"):
-                sb.start()
-            return sb
-        except ImportError:
-            pass
-        except Exception as e:
-            print(f"[UnifiedDemo] DummyServerBringUpProMax (package import) failed: {e}")
-        
-            return None
-    else:
-        # Try real server options (prioritize Server_bring_up_with_Audio.py)
-        try:
-            # Try Server_bring_up_with_Audio.py (Full ServerBringUpProMax with advanced audio)
-            import sys
-            import os
-            repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-            if repo_root not in sys.path:
-                sys.path.insert(0, repo_root)
-            
-            from Server_bring_up_with_Audio import ServerBringUpProMax
-            from packages.uwb_mqtt_server.config import MQTTConfig
-            
-            # Create MQTT config with defaults
-            mqtt_config = MQTTConfig(
-                broker="localhost",
-                port=1884,
-                username="laptop", 
-                password="laptop"
-            )
-            
-            sb = ServerBringUpProMax(mqtt_config=mqtt_config)
-            if hasattr(sb, "start"):
-                sb.start()
-            print("[UnifiedDemo] Started ServerBringUpProMax (full audio pipeline)")
-            return sb
-        except Exception as e:
-            print(f"[UnifiedDemo] ServerBringUpProMax (full audio) failed: {e}")
-        
-        try:
-            # Fallback: Try demo_server_bring_up.py (DEPRECATED - basic audio)
-            from demo_server_bring_up import ServerBringUpProMax
-            from packages.uwb_mqtt_server.config import MQTTConfig
-            
-            mqtt_config = MQTTConfig(
-                broker="localhost",
-                port=1884,
-                username="laptop",
-                password="laptop"
-            )
-            
-            sb = ServerBringUpProMax(mqtt_config=mqtt_config)
-            if hasattr(sb, "start"):
-                sb.start()
-            print("[UnifiedDemo] ⚠️  Started ServerBringUpProMax (DEPRECATED - basic audio)")
-            print("[UnifiedDemo] ⚠️  Consider using Server_bring_up_with_Audio.py for full features")
-            return sb
-        except Exception as e:
-            print(f"[UnifiedDemo] ServerBringUpProMax (deprecated) failed: {e}")
-        
-        try:
-            # Last resort: Try Server_bring_up.py (basic ServerBringUp - no audio)
-            from Server_bring_up import ServerBringUp
-            from packages.uwb_mqtt_server.config import MQTTConfig
-            
-            mqtt_config = MQTTConfig(
-                broker="localhost",
-                port=1884,
-                username="laptop",
-                password="laptop"
-            )
-            
-            sb = ServerBringUp(mqtt_config=mqtt_config)
-            if hasattr(sb, "start"):
-                sb.start()
-            print("[UnifiedDemo] Started ServerBringUp (basic version - no audio)")
-            return sb
-        except Exception as e:
-            print(f"[UnifiedDemo] ServerBringUp (basic) failed: {e}")
-            
-        print("[UnifiedDemo] No real server found. Use --dummy flag for simulation.")
-        print("[UnifiedDemo] Make sure MQTT broker is running on localhost:1884")
-        print("[UnifiedDemo] Recommended: Use Server_bring_up_with_Audio.py for full functionality")
+def _mqtt_config_from_settings(settings):
+    """Broker settings for real hardware (same defaults as server_bring_up_with_audio)."""
+    from packages.uwb_mqtt_server.config import MQTTConfig
+
+    broker = settings.value("mqtt/broker", "localhost", type=str)
+    port = settings.value("mqtt/port", 1884, type=int)
+    user = settings.value("mqtt/username", "laptop", type=str)
+    password = settings.value("mqtt/password", "laptop", type=str)
+    return MQTTConfig(
+        broker=broker.strip() or "localhost",
+        port=port,
+        username=user.strip() or None,
+        password=password or None,
+    )
+
+
+def _start_server_bringup(settings):
+    """
+    Start ServerBringUpProMax from Demos/UnifiedDemo/server_bring_up_with_audio.py.
+
+    Expects a running MQTT broker and UWB anchors publishing measurements (see repo README).
+    """
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    if repo_root not in sys.path:
+        sys.path.insert(0, repo_root)
+
+    try:
+        from server_bring_up_with_audio import ServerBringUpProMax
+
+        mqtt_config = _mqtt_config_from_settings(settings)
+        sb = ServerBringUpProMax(mqtt_config=mqtt_config)
+        if hasattr(sb, "start"):
+            sb.start()
+        print(
+            f"[UnifiedDemo] ServerBringUpProMax started "
+            f"(MQTT {mqtt_config.broker}:{mqtt_config.port})"
+        )
+        return sb
+    except Exception as e:
+        print(f"[UnifiedDemo] ServerBringUpProMax failed: {e}")
         return None
 
 def _load_pgo_widget(app_bus, services, settings):
@@ -245,10 +154,8 @@ class _SettingsDialog(QDialog):
             self.path_edit.setText(filename)
 
 class MainWindow(QMainWindow):
-    def __init__(self, use_dummy=False, simulation_speed=None):
+    def __init__(self):
         super().__init__()
-        self._use_dummy = use_dummy
-        self._simulation_speed = simulation_speed
         self.setWindowTitle("UWB Localization Visualization - Unified Demo")
         self.resize(1400, 900)
 
@@ -277,10 +184,15 @@ class MainWindow(QMainWindow):
         self.services["shared_floorplan"] = self.shared_floorplan
 
         # Create and start server
-        self.server = _start_server_bringup(use_dummy=use_dummy, settings=self.settings, simulation_speed=self._simulation_speed)
+        self.server = _start_server_bringup(self.settings)
         if self.server is None:
-            QMessageBox.critical(self, "Server Error", 
-                               "Failed to start server. Use --dummy flag for simulation.")
+            QMessageBox.critical(
+                self,
+                "Server Error",
+                "Failed to start ServerBringUpProMax (Demos/UnifiedDemo/server_bring_up_with_audio.py).\n\n"
+                "Run Mosquitto, set mqtt/broker in QSettings if the broker is not localhost, "
+                "and ensure anchors are publishing. See repository README.",
+            )
             return
 
         # Add server to services for direct access by widgets
@@ -520,9 +432,6 @@ class MainWindow(QMainWindow):
         self.bus.globalVolumeChanged.connect(self._on_global_volume_changed)
         self.bus.shuffleToggled.connect(self._on_shuffle_toggled)
         self.bus.repeatToggled.connect(self._on_repeat_toggled)
-
-        # Settings
-        self.bus.simulationSpeedChanged.connect(self._on_simulation_speed_changed)
 
         # Zone events (for logging/status)
         self.bus.zoneRegistered.connect(self._on_zone_registered)
@@ -1140,14 +1049,6 @@ class MainWindow(QMainWindow):
             self.settings.sync()
             
             QMessageBox.information(self, "Settings", "Settings saved successfully.")
-    
-    # --- Settings Handlers ---
-    @pyqtSlot(float)
-    def _on_simulation_speed_changed(self, speed: float):
-        """Handle simulation speed change."""
-        if self.server and hasattr(self.server, 'simulation_speed'):
-            self.server.simulation_speed = speed
-            self.bus.simulationSpeedChanged.emit(speed)
 
     # --- Zone Event Handlers (for logging/status) ---
     @pyqtSlot(object, float, float, float, str)
@@ -1198,17 +1099,9 @@ class MainWindow(QMainWindow):
         super().closeEvent(event)
 
 def main():
-    import argparse
-    parser = argparse.ArgumentParser(description='Unified Demo')
-    parser.add_argument('--dummy', action='store_true',
-                      help='Use dummy server for simulation instead of real hardware')
-    parser.add_argument('--speed', type=float, default=None,
-                      help='Simulation speed multiplier (e.g., 0.01 = very slow, 1.0 = normal)')
-    args, qt_args = parser.parse_known_args()
-
-    # Qt needs its own args
-    app = QApplication(qt_args if qt_args else sys.argv)
-    win = MainWindow(use_dummy=args.dummy, simulation_speed=args.speed)
+    # Pass through Qt flags (e.g. --style); no custom CLI beyond that.
+    app = QApplication(sys.argv)
+    win = MainWindow()
     win.show()
     sys.exit(app.exec_())
 

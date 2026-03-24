@@ -2,6 +2,8 @@
 
 This document captures the **design rules** that keep the system predictable, testable, and demo‑ready across multiple devices.
 
+**Product vs example apps:** **UWB localization** (packages + anchor/server bring-ups) is the **core**. The **Unified Demo** and other `Demos/*` are **optional compositions** that import that core; they illustrate how an application layer can embed the laptop server and attach a UI—they are not the definition of the core architecture.
+
 ---
 
 ## 1) Packages: purity & boundaries
@@ -131,7 +133,7 @@ def rotate_yaw(vec_cm: np.ndarray, yaw_deg: float) -> np.ndarray:
 ## 11) Naming & style
 
 - Python: `snake_case` for modules/vars, `CapWords` for classes, `lowercase` console scripts.
-- Keep file names short and descriptive (`server_bring_up.py`, `basic_render_graph/run.py`).
+- Keep file names short and descriptive (`Server_bring_up.py`, `Demos/UnifiedDemo/server_bring_up_with_audio.py`, `Demos/UnifiedDemo/main_demo.py`).
 - Docstrings for public APIs; keep README examples runnable.
 
 ---

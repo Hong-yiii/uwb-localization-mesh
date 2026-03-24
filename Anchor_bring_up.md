@@ -13,6 +13,8 @@ The UWB localization system consists of:
 
 Each Raspberry Pi runs the same `Anchor_bring_up.py` script, which automatically detects which anchor it is and publishes UWB measurements to MQTT.
 
+**Optional — corner speakers:** this script is **UWB only**. For adaptive / zone audio, run a **second** process on each Pi: `packages/audio_mqtt_client/synchronized_audio_player_rpi.py` (see **[`README.md`](README.md)** and **[`Demos/UnifiedDemo/README.md`](Demos/UnifiedDemo/README.md)**).
+
 
 ## Prerequisites
 
@@ -62,8 +64,8 @@ mosquitto -c mosquitto.conf
 
 3. Verify MQTT broker is running:
 ```bash
-# Subscribe to test topic
-mosquitto_sub -h localhost -t "test"
+# Subscribe on the same port as anchors (1884)
+mosquitto_sub -h localhost -p 1884 -t "uwb/#"
 ```
 
 ## Quick Start
@@ -219,13 +221,12 @@ python Anchor_bring_up.py --dry-run
 
 **Test MQTT Connection:**
 ```bash
-mosquitto_sub -h localhost -t "uwb/0/measurements"
+mosquitto_sub -h <broker-ip> -p 1884 -t "uwb/#"
 ```
 
-**Monitor Measurements:**
+**Monitor one anchor’s vectors:**
 ```bash
-# On another terminal, subscribe to measurements
-mosquitto_sub -h localhost -t "uwb/0/measurements" | jq .
+mosquitto_sub -h <broker-ip> -p 1884 -t "uwb/anchor/0/vector"
 ```
 
 ## Anchor Positions
@@ -241,16 +242,18 @@ The system assumes standard anchor positions (can be modified in localization se
 
 After anchors are running and publishing measurements:
 
-1. **Start the localization server** using `Server_bring_up.py`
-2. **Verify measurements** are being received
-3. **Tune anchor positions** if needed
-4. **Test phone tracking** with the localization pipeline
+1. **Start the laptop side:** **`Server_bring_up.py`** (localization only), **`Demos/UnifiedDemo/main_demo.py`** (GUI + embedded `ServerBringUpProMax`), or headless **`python Demos/UnifiedDemo/server_bring_up_with_audio.py`** (localization + audio MQTT) — **only one** of these at a time. See **[`dummies_setup_guide.md`](dummies_setup_guide.md)**.
+2. **Verify measurements** are being received (`mosquitto_sub -h <broker> -p 1884 -t "uwb/#"`).
+3. **Tune anchor positions** if needed (server / PGO config).
+4. **Test phone tracking** with the localization pipeline.
+5. **Optional audio:** second terminal per Pi — `synchronized_audio_player_rpi.py` per **[`packages/audio_mqtt_client/README.md`](packages/audio_mqtt_client/README.md)**.
 
 ## Files Overview
 
 - `Anchor_bring_up.py` - Main script (this file)
 - `Anchor_bring_up.md` - This documentation
 - `packages/uwb_mqtt_client/` - MQTT client package
-- `Server_bring_up.py` - Localization server script
+- `Server_bring_up.py` - Localization-only laptop server
+- `Demos/UnifiedDemo/server_bring_up_with_audio.py` - Laptop server with audio MQTT (`ServerBringUpProMax`; also embedded by Unified Demo)
 
 The UWB anchor system is now ready to provide real-time positioning data! 📍
