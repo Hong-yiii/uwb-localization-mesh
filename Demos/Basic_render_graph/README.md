@@ -1,5 +1,7 @@
 # Basic UWB Position Visualization
 
+> **Deprecated:** This matplotlib-only viewer is superseded by **`Demos/UnifiedDemo/`** (`main_demo.py`), which includes live PGO plotting, floorplan, and audio tabs. This folder is retained only for minimal debugging or historical reference.
+
 A clean, simple visualization for the UWB positioning system. This demo provides:
 - Real-time grid display
 - Smooth position updates

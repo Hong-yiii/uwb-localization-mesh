@@ -309,10 +309,10 @@ Current position: [123.45 234.56  50.00]
 
 Once everything is running, you can:
 
-1. **Run a visualization demo:**
+1. **Run the unified visualization / audio UI:**
    ```bash
-   # On laptop, in new terminal
-   uv run python Demos/Basic_render_graph/basic_visualizer.py
+   # On laptop, in new terminal (embeds ServerBringUpProMax; broker + anchors must be up)
+   uv run python Demos/UnifiedDemo/main_demo.py
    ```
 
 2. **Test with your phone:**
@@ -320,11 +320,7 @@ Once everything is running, you can:
    - Move around the tracked area
    - Watch position updates in server terminal
 
-3. **Run audio demos:**
-   ```bash
-   # Follow-me audio demo
-   uv run python Demos/Follow_me_audio/follow_me_demo.py
-   ```
+3. **Audio:** Use the **Adaptive Audio** and **Zone DJ** tabs inside the Unified Demo, or integrate via `packages/audio_mqtt_client` / `packages/audio_mqtt_server` (there is no separate `Demos/Follow_me_audio/` tree in this repo).
 
 ---
 

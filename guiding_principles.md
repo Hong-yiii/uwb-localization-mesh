@@ -131,7 +131,7 @@ def rotate_yaw(vec_cm: np.ndarray, yaw_deg: float) -> np.ndarray:
 ## 11) Naming & style
 
 - Python: `snake_case` for modules/vars, `CapWords` for classes, `lowercase` console scripts.
-- Keep file names short and descriptive (`server_bring_up.py`, `basic_render_graph/run.py`).
+- Keep file names short and descriptive (`server_bring_up.py`, `Demos/UnifiedDemo/main_demo.py`).
 - Docstrings for public APIs; keep README examples runnable.
 
 ---

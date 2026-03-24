@@ -48,9 +48,9 @@ flowchart TD
 
     %% Application Layer
     subgraph "Application Layer"
-        VIZ[Basic_render_graph<br/>Real-time visualization]
-        AUDIO_FOLLOW[Follow_me_audio<br/>Spatial audio routing]
-        AUDIO_ADAPTIVE[Adaptive_audio<br/>Dynamic mixing]
+        VIZ[Unified Demo (PyQt)<br/>PGO + floorplan + zones]
+        AUDIO_FOLLOW[Audio MQTT + widgets<br/>Follow / adaptive / zone DJ]
+        AUDIO_ADAPTIVE[packages/audio_*<br/>Server & client]
         DATA_COLLECTION[Data_collection<br/>Logging & evaluation]
     end
 
@@ -217,41 +217,36 @@ Central ingest + processing + outputs for demos.
 
 ---
 
-## ▶️ Demos (run after bring‑ups)
+## ▶️ Demos
 
-**`Demos/Basic_render_graph`** — plots the PGO graph on a grid (anchors + phone).  
-**`Demos/Follow_me_audio`** — uses user position to route audio (via audio MQTT).  
-**`Demos/Adaptive_audio`** — adjusts playback based on zones or proximity.  
-**`Demos/Speaker_setup`** — utility flows to register speaker positions & sanity‑check.  
-**`Data_collection`** — captures raw measurements and solver outputs for evaluation.
+Index: **[`Demos/README.md`](Demos/README.md)**.
 
-**Run order (base case):**
+**`Demos/UnifiedDemo`** — **recommended** PyQt app with **embedded** `ServerBringUpProMax` (`Server_bring_up_with_Audio.py`): PGO plot, adaptive audio, zone DJ. **Do not** start a second laptop server process while it runs. Full deployment steps: **[`Demos/UnifiedDemo/README.md`](Demos/UnifiedDemo/README.md)**.
+
+**`Demos/Basic_render_graph`** — **deprecated** matplotlib view; superseded by Unified Demo. See that folder’s README.  
+**`Data_collection`** — logging and evaluation.
+
+**Run order — Unified Demo (typical):**
+
 ```bash
-# 1) Start MQTT broker on laptop
+# 1) Broker (example: port 1884)
 echo "listener 1884
 allow_anonymous true" > mosquitto.conf
 mosquitto -c mosquitto.conf
 
-# 2) Start server (in new terminal)
-# Replace with your laptop's IP
-python Server_bring_up.py --broker 192.168.68.66
+# 2) Anchors on RPis (broker = laptop IP or hostname reachable from Pis)
+python Anchor_bring_up.py --anchor-id 0 --broker <BROKER_IP>
+# … repeat for anchors 1–3
 
-# 3) Start anchors on RPis (in separate terminals)
-# Replace with your laptop's IP
-python Anchor_bring_up.py --anchor-id 0 --broker 192.168.68.66
-python Anchor_bring_up.py --anchor-id 1 --broker 192.168.68.66
-python Anchor_bring_up.py --anchor-id 2 --broker 192.168.68.66
-python Anchor_bring_up.py --anchor-id 3 --broker 192.168.68.66
-
-# 4) Run a demo (in new terminal)
-python Demos/Basic_render_graph/run.py
-# or
-python Demos/Follow_me_audio/run.py
+# 3) GUI + embedded server (same machine as broker is common)
+python Demos/UnifiedDemo/main_demo.py
 ```
 
-> **Important**: Always start the MQTT broker first, then server, then anchors.
+**Run order — other demos** that expect a **standalone** server: broker → `Server_bring_up.py` / `Server_bring_up_with_Audio.py` → anchors → demo script.
 
-> If you use `uv`, the same commands work with `uv run …`
+Always start the **broker** first, then any **standalone** server, then **anchors**.
+
+If you use **`uv`**, use `uv run …` where appropriate.
 
 
 ## 📚 Reference Repositories
